@@ -1,0 +1,76 @@
+Sub stockmarkerts()
+Dim ws As Worksheet
+For Each ws In ThisWorkbook.Worksheets
+
+'Set headers on the first row, no 1
+ws.Cells(1, 9).Value = "Ticker"
+ws.Cells(1, 10).Value = "Yearly change"
+ws.Cells(1, 11).Value = "Percentage Change"
+ws.Cells(1, 12).Value = "Total Stock Volume"
+
+'Set the data format for each column
+Dim ticker As String
+Dim year_open As Currency
+Dim year_close As Currency
+Dim yearly_change As Currency
+Dim percentage_change As Double
+Dim vol As LongLong
+
+vol = 0
+
+'Top row of data analysis
+Dim R1 As Integer
+Dim RF As LongLong
+Summary_Table_Row = 2
+R1 = Summary_Table_Row
+Last_Row_Index = (ws.Cells(Rows.Count, 1).End(xlUp).Row)
+RF = Last_Row_Index
+
+'MsgBox (ws.Cells(RF, 7).Value)
+'Loop
+For i = R1 To RF
+vol = vol + ws.Cells(i, 7).Value
+If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+ticker = ws.Cells(i + 1, 1).Value
+
+year_open = ws.Cells(i, 3).Value
+year_close = ws.Cells(i, 6).Value
+
+yearly_change = year_close - year_open
+percentage_change = yearly_change / year_open
+
+'insert values into the summary table
+ws.Cells(R1, 9).Value = ticker
+ws.Cells(R1, 10).Value = yearly_change
+ws.Cells(R1, 11).Value = percentage_change
+ws.Cells(R1, 12).Value = vol
+R1 = R1 + 1
+
+vol = 0
+End If
+
+Next i
+
+ws.Columns("K").NumberFormat = "0.00%"
+ws.Columns("L").NumberFormat = "#,###"
+
+'Conditional format_ positive change- Green and Negative change- Red
+'Row Final of the Summary
+Dim RFS As Integer
+RFS = ws.Cells(Rows.Count, 11).End(xlUp).Row
+For i = 2 To RFS
+If ws.Cells(i, 11).Value < 0 Then
+    ws.Cells(i, 11).Interior.Color = vbRed
+ElseIf ws.Cells(i, 11).Value > 0 Then
+    ws.Cells(i, 11).Interior.Color = vbGreen
+End If
+Next i
+'Greatest and Smallest Icrease/decrease
+Dim g As Range
+Set g = Range(Cells(2, 11), Cells(2, RFS))
+ws.Cells(2, 15).Value = WorksheetFunction.Max(g)
+ws.Cells(3, 15).Value = WorksheetFunction.Min(g)
+ws.Cells(2, 14).Value = "Max %Insrease"
+ws.Cells(3, 14).Value = "Min %Decrease"
+Next ws
+End Sub
